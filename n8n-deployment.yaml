@@ -25,11 +25,14 @@ spec:
             - name: n8n-claim0
               mountPath: /data
       containers:
-        - command:
-            - /bin/sh
+        - name: n8n
+          image: n8nio/n8n
+          command: ["/bin/sh"]
           args:
             - -c
-            - sleep 5; n8n start
+            - |
+              sleep 5
+              n8n start
           env:
             - name: DB_TYPE
               value: postgresdb
@@ -50,11 +53,15 @@ spec:
                   name: postgres-secret
                   key: POSTGRES_NON_ROOT_PASSWORD
             - name: N8N_PROTOCOL
-              value: http
+              value: http  # 변경됨: ELB에서 SSL 종료를 처리하므로 http로 설정
             - name: N8N_PORT
               value: "5678"
-          image: n8nio/n8n
-          name: n8n
+            - name: N8N_HOST
+              value: "0.0.0.0"  # 추가됨: 모든 인터페이스에서 수신 대기
+            - name: WEBHOOK_URL
+              value: "https://n8n.yourdomain.com"  # 추가됨: 실제 도메인으로 교체
+            - name: VUE_APP_URL_BASE_API
+              value: "https://n8n.yourdomain.com"  # 추가됨: 실제 도메인으로 교체
           ports:
             - containerPort: 5678
           resources:
